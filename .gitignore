@@ -1,0 +1,16 @@
+# .NET
+backend/bin/
+backend/obj/
+backend/*.user
+
+# React
+frontend/node_modules/
+frontend/dist/
+
+# Environment secrets
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
