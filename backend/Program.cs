@@ -1,11 +1,12 @@
-using System.Text;
 using JrvImpact.Api.Data;
 using JrvImpact.Api.Models;
 using JrvImpact.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Npgsql;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,37 @@ builder.Services.AddScoped<IExcelExportService, ExcelExportService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "JRV Impact API", Version = "v1" });
+
+    // Add JWT Bearer definition
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your token here}\n\nExample: Bearer eyJhbGci..."
+    });
+
+    // Make all endpoints require it by default
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+}); 
 
 builder.Services.AddAuthentication(options =>
 {
@@ -46,7 +77,8 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+
     };
 });
 
@@ -92,7 +124,7 @@ using (var scope = app.Services.CreateScope())
     await conn.OpenAsync();
     await using (var checkCmd = conn.CreateCommand())
     {
-        checkCmd.CommandText = "SELECT to_regclass('public.users')";
+        checkCmd.CommandText = "SELECT to_regclass('public.users')::text";
         var result = await checkCmd.ExecuteScalarAsync();
         if (result is null || result is DBNull)
         {
