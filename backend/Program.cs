@@ -152,11 +152,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ---- Middleware pipeline ----
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("Frontend");
 app.UseStaticFiles(); // serves wwwroot/uploads/*

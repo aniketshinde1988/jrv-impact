@@ -29,6 +29,17 @@ export default function App() {
             }
           />
 
+          {/* /master/locations is accessible without an active location so users can create their first one */}
+          <Route
+            element={
+              <ProtectedRoute requireLocation={false}>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/master/locations" element={<LocationsPage />} />
+          </Route>
+
           <Route
             element={
               <ProtectedRoute>
@@ -37,7 +48,6 @@ export default function App() {
             }
           >
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/master/locations" element={<LocationsPage />} />
             <Route path="/master/companies" element={<CompaniesPage />} />
             <Route path="/master/job-titles" element={<JobTitlesPage />} />
             <Route path="/transaction/pre-job-sheets" element={<PreJobSheetsPage />} />
